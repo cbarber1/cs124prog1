@@ -42,6 +42,19 @@ std::vector<std::array<float, 3>> build_graph(int numpoints, int dimension) {
             vertices[i][j] = (float) rand() / (float) (RAND_MAX);
         }
     }
+
+    // Calculate edge between each unique pair of vertices and store as triple in final_graph vector
+    for (int i = 0; i < numpoints; i++) {
+        for (int j = i; j < numpoints; j++) {
+            float edge = find_weight(vertices[i], vertices[j], dimension);
+            std::array<float, 3> arr = {edge, i, j};
+            final_graph.push_back(arr);
+        }
+    }
+
+    std::sort(final_graph.begin(), final_graph.end(), sortByEdge);
+
+    return final_graph;
 };
 
 // find function to find out if endpoints are in the same tree/set
@@ -49,7 +62,9 @@ std::vector<std::array<float, 3>> build_graph(int numpoints, int dimension) {
 int find(int x) {
     for (int i = 0; i < sets.length; i++) {
         if (sets[i].find(x) != sets[i].end()) {
-            return i;
+            if (!sets[i] boolean) {
+                return i;
+            }
         };
     }
 }
@@ -60,6 +75,7 @@ int find(int x) {
 void union(set u, set v) {
     u.insert(v.begin(), v.end());
     // delete v from sets maybe by just setting a boolean variable to false
+    // maybe have a boolean at the beginning of a set and then the actual set of vertices
 }
 
 std::set<int> X;
