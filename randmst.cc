@@ -1,25 +1,8 @@
 #include <iostream>
 #include <cmath>
 #include <map>
-#include <set>
-
-struct D2coords {
-    int x1;
-    int x2;
-};
-
-struct D3coords {
-    int x1;
-    int x2;
-    int x3;
-};
-
-struct D4coords {
-    int x1;
-    int x2;
-    int x3;
-    int x4;
-};
+#include <vector>
+#include <array>
 
 int main(int argc, char *argv[]) {
     if (argc != 5) {
@@ -39,27 +22,24 @@ float find_weight(float coord1[], float coord2[], int dimension) {
     return pow(weight, 0.5);
 };
 
-// Helper function to build graph (as adjacency list)
-// Incomplete 
-void build_graph(int numpoints, int dimension) {
-    void* vertices[numpoints];
+// Helper function for sorting edges in ascending order
+bool sortByEdge(float arr1[3], float arr2[3]) {
+    return (arr1[0] < arr2[0]);
+}
 
+// Helper function to build graph (represented as edges in increasing weight)
+std::vector<std::array<float, 3>> build_graph(int numpoints, int dimension) {
+    // Initialize vector that stores points and edge between them
+    std::vector<std::array<float, 3>> final_graph;
+    final_graph.reserve((numpoints - 1) * numpoints / 2);
+
+    // Initialize array of vertices
+    float vertices[numpoints][dimension];
+
+    // Generate [numpoints] vertices
     for (int i = 0; i < numpoints; i++) {
-        if (dimension == 2) {
-            D2coords* coords = new D2coords;
-            coords->x1 = (float) rand() / (float) (RAND_MAX);
-            coords->x2 = (float) rand() / (float) (RAND_MAX);
-        } else if (dimension == 3) {
-            D3coords* coords = new D3coords;
-            coords->x1 = (float) rand() / (float) (RAND_MAX);
-            coords->x2 = (float) rand() / (float) (RAND_MAX);
-            coords->x3 = (float) rand() / (float) (RAND_MAX);
-        } else if (dimension == 4) {
-            D4coords* coords = new D4coords;
-            coords->x1 = (float) rand() / (float) (RAND_MAX);
-            coords->x2 = (float) rand() / (float) (RAND_MAX);
-            coords->x3 = (float) rand() / (float) (RAND_MAX);
-            coords->x4 = (float) rand() / (float) (RAND_MAX);
+        for (int j = 0; j < dimension; j++) {
+            vertices[i][j] = (float) rand() / (float) (RAND_MAX);
         }
     }
 };
