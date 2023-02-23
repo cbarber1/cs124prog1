@@ -53,7 +53,6 @@ std::vector<std::array<float, 3>> build_graph(int numpoints, int dimension) {
     }
 
     // Sort final_graph in ascending order
-    int n = sizeof(final_graph) / sizeof(final_graph[0]);
     std::sort(final_graph.begin(), final_graph.end(), sortByEdge);
 
     return final_graph;
