@@ -6,7 +6,8 @@
 #include <set>
 
 struct DisjointSets {
-
+    int* parent;
+    int* rank;
 }
 
 int main(int argc, char *argv[]) {
