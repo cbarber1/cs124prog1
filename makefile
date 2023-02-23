@@ -1,12 +1,10 @@
 CC = g++
-CFLAGS = -g -wall
+CFLAGS = -g -Wall -O3
 TARGET = randmst
 
-all: $(TARGET)
+$(TARGET): $(TARGET).cc
+	$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cc
  
-	$(TARGET): $(TARGET).cc
-				$(CC) $(CFLAGS) -o $(TARGET) $(TARGET).cc
- 
-  clean:
-				$(RM) $(TARGET)
+clean:
+	$(RM) $(TARGET)
 
