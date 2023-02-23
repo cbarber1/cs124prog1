@@ -45,14 +45,14 @@ std::vector<std::vector<float> > get_vertices(int numpoints, int dimension) {
 std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std::vector<std::vector<float> > vertices) {
     // Initialize vector that stores points and edge between them
     std::vector<std::array<float, 3> > final_graph;
-    final_graph.reserve((numpoints - 1) * numpoints / 2);
+    final_graph.reserve(numpoints*20);
 
-    float kn = pow(.014, 2);//pow(.1 * log(numpoints),2);
+    float kn = pow(.009, 2);//pow(.1 * log(numpoints),2);
     // 4096 :  pow(.04, 2)
     // 8192 : pow(.03, 2)
     // 16384 : pow(.02, 2) maybe .18
     // 32768 : pow(.013, 2)
-    // 65536 : 
+    // 65536 : pow(.01, 2) maybe even less 
 
     // Calculate edge between each unique pair of vertices and store as triple in final_graph vector
     for (int i = 0; i < numpoints; i++) {
@@ -160,6 +160,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
   
     return mst_wt;
 }
+
 
 int main(int argc, char *argv[]) {
     if (argc != 5) {
