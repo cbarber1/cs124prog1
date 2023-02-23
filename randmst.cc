@@ -47,7 +47,12 @@ std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std
     std::vector<std::array<float, 3> > final_graph;
     final_graph.reserve((numpoints - 1) * numpoints / 2);
 
-    float kn = pow(.1 * log(numpoints),2);
+    float kn = pow(.014, 2);//pow(.1 * log(numpoints),2);
+    // 4096 :  pow(.04, 2)
+    // 8192 : pow(.03, 2)
+    // 16384 : pow(.02, 2) maybe .18
+    // 32768 : pow(.013, 2)
+    // 65536 : 
 
     // Calculate edge between each unique pair of vertices and store as triple in final_graph vector
     for (int i = 0; i < numpoints; i++) {
@@ -122,6 +127,7 @@ struct DisjointSets {
   
 float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::array<float, 3> > finalGraph) {
     float mst_wt = 0; // Initialize result
+    float largest_wt = 0;
   
     // Create disjoint sets
     DisjointSets ds(vertices.size());
@@ -139,12 +145,18 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
         if (set_u != set_v)
         {
             // Update MST weight
-            mst_wt += pow(finalGraph[i][0], 0.5);
+            float wt = pow(finalGraph[i][0], 0.5);
+            mst_wt += wt;
+            if (wt > largest_wt) {
+                largest_wt = wt;
+            }
   
             // Merge two sets
             ds.merge(set_u, set_v);
         }
     }
+
+    std::cout << "largest weight in the MST: " << largest_wt << "\n";
   
     return mst_wt;
 }
