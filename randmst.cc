@@ -6,15 +6,20 @@
 #include <set>
 #include <cstdlib>
 #include <ctime>
+#include <chrono>
 
 // Helper function determine distance between points (edge weights)
 float find_weight(std::vector<float> coord1, std::vector<float>  coord2, int dimension) {
     float weight = 0;
     for (int i = 0; i < dimension; i++) {
-        weight += pow((coord1[i] - coord2[i]), 2);
+        float sub = coord1[i] - coord2[i];
+        weight += sub*sub;
     }
 
-    return pow(weight, 0.5);
+    // return pow(weight, 0.5); 
+    // changed this in order to optimize because square root is pretty slow, 
+    // now we only square root the edges that we aren't pruning
+    return weight;
 };
 
 // Helper function for sorting edges in ascending order
@@ -42,12 +47,16 @@ std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std
     std::vector<std::array<float, 3> > final_graph;
     final_graph.reserve((numpoints - 1) * numpoints / 2);
 
+    float kn = pow(.1 * log(numpoints),2);
+
     // Calculate edge between each unique pair of vertices and store as triple in final_graph vector
     for (int i = 0; i < numpoints; i++) {
         for (int j = i + 1; j < numpoints; j++) {
             float edge = find_weight(vertices[i], vertices[j], dimension);
-            std::array<float, 3> arr = {edge, i, j};
-            final_graph.push_back(arr);
+            if (edge < kn) {
+                std::array<float, 3> arr = {edge, i, j};
+                final_graph.push_back(arr);
+            }
         }
     }
 
@@ -57,12 +66,12 @@ std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std
     return final_graph;
 };
 
-// To represent Disjoint Sets
+// For Kruskals algo
 struct DisjointSets {
     int *parent, *rank;
     int n;
   
-    // Constructor.
+    // Constructor for disjoint sets
     DisjointSets(int n)
     {
         // Allocate memory
@@ -70,25 +79,24 @@ struct DisjointSets {
         parent = new int[n+1];
         rank = new int[n+1];
   
-        // Initially, all vertices are in
-        // different sets and have rank 0.
+        // All vertices start as different sets/trees with rank 0.
         for (int i = 0; i <= n; i++)
         {
             rank[i] = 0;
-  
+
             //every element is parent of itself
             parent[i] = i;
         }
     }
   
-    // Find the parent of a node 'u'
-    // Path Compression
+    // Find the parent of a vertex
     int find(int u)
     {
         /* Make the parent of the nodes in the path
         from u--> parent[u] point to parent[u] */
-        if (u != parent[u])
+        if (u != parent[u]) {
             parent[u] = find(parent[u]);
+        }
         return parent[u];
     }
   
@@ -99,20 +107,21 @@ struct DisjointSets {
   
         /* Make tree with smaller height
         a subtree of the other tree */
-        if (rank[x] > rank[y])
+        if (rank[x] > rank[y]) {
             parent[y] = x;
-        else // If rank[x] <= rank[y]
+        } else {
             parent[x] = y;
+        }  
   
-        if (rank[x] == rank[y])
+        if (rank[x] == rank[y]) {
             rank[y]++;
+        }
     }
 };
 
   
 float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::array<float, 3> > finalGraph) {
     float mst_wt = 0; // Initialize result
-    int mst_size = 0;
   
     // Create disjoint sets
     DisjointSets ds(vertices.size());
@@ -126,18 +135,14 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
         int set_u = ds.find(u);
         int set_v = ds.find(v);
   
-        // Check if the selected edge is creating
-        // a cycle or not (Cycle is created if u
-        // and v belong to same set)
+        // Check if edge endpoints are in the same set/tree already
         if (set_u != set_v)
         {
             // Update MST weight
-            mst_wt += finalGraph[i][0];
+            mst_wt += pow(finalGraph[i][0], 0.5);
   
             // Merge two sets
             ds.merge(set_u, set_v);
-
-            mst_size++;
         }
     }
   
@@ -149,6 +154,8 @@ int main(int argc, char *argv[]) {
         std::cout << "Usage: ./randmst 0 numpoints numtrials dimension\n";
     } else {
         srand(std::time(0));
+
+        std::__1::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
 
         int numpoints = atoi(argv[2]);
         int numtrials = atoi(argv[3]);
@@ -162,6 +169,11 @@ int main(int argc, char *argv[]) {
             mst_total += kruskalMST(vertices, finalGraph);
         }
 
+        std::__1::chrono::steady_clock::time_point end = std::chrono::high_resolution_clock::now();
+
+        std::__1::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+
         std::cout << "average weight: " << mst_total / numtrials << "\n";
+        std::cout << "time it took: " << duration.count() << " seconds \n";
     }
 };
