@@ -141,7 +141,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
         }
     }
   
-    return mst_wt / mst_size;
+    return mst_wt;
 }
 
 int main(int argc, char *argv[]) {
@@ -149,9 +149,19 @@ int main(int argc, char *argv[]) {
         std::cout << "Usage: ./randmst 0 numpoints numtrials dimension\n";
     } else {
         srand(std::time(0));
-        std::vector<std::vector<float> > vertices = get_vertices(atoi(argv[2]), atoi(argv[4]));
-        std::vector<std::array<float, 3> > finalGraph = build_graph(atoi(argv[2]), atoi(argv[4]), vertices);
 
-        std::cout << "average weight: " << kruskalMST(vertices, finalGraph);
+        int numpoints = atoi(argv[2]);
+        int numtrials = atoi(argv[3]);
+        int dimension = atoi(argv[4]);
+
+        float mst_total = 0;
+        for (int i = 0; i < numtrials; i++) {
+            std::vector<std::vector<float> > vertices = get_vertices(numpoints, dimension);
+            std::vector<std::array<float, 3> > finalGraph = build_graph(numpoints, dimension, vertices);
+
+            mst_total += kruskalMST(vertices, finalGraph);
+        }
+
+        std::cout << "average weight: " << mst_total / numtrials << "\n";
     }
 };
