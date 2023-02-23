@@ -3,6 +3,11 @@
 #include <map>
 #include <vector>
 #include <array>
+#include <set>
+
+struct DisjointSets {
+
+}
 
 int main(int argc, char *argv[]) {
     if (argc != 5) {
@@ -77,15 +82,13 @@ void union(set u, set v) {
     u.insert(v.begin(), v.end());
     // delete v from sets maybe by just setting a boolean variable to false
     // maybe have a boolean at the beginning of a set and then the actual set of vertices
-}
+};
 
-std::set<int> X;
-void kruskal(graph G, vertices vertices) {
+std::set<float> X;
+void kruskal(std::vector<std::array<float, 3>> graph, float vertices[]) {
     // sort edges
-    // go through vertices and make a set for each of them 
-    for (int i = 0; i < vertices.length, i++) {
-
-    }
+    // Make set of vertices
+    std::set
     // 
     for (each edge (u, v)) {
         if (find(u) != find(v)) {
@@ -94,3 +97,6 @@ void kruskal(graph G, vertices vertices) {
         }
     }
 }
+
+// Note for self : 
+// split vertice - finding function from graph -creating function (so that vertices and graphs can be returned to caller separately then passed to kruskal())
