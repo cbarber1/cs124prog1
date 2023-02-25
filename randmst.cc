@@ -108,14 +108,10 @@ struct DisjointSets {
         }
         return parent[u];
     }
-  
-    // Union by rank
-    void merge(int x, int y)
-    {
-        x = find(x), y = find(y);
-  
-        /* Make tree with smaller height
-        a subtree of the other tree */
+
+    void link(int x, int y) {
+        // Make tree with smaller height
+        // a subtree of the other tree 
         if (rank[x] > rank[y]) {
             parent[y] = x;
         } else {
@@ -126,6 +122,12 @@ struct DisjointSets {
             rank[y]++;
         }
     }
+  
+    // Union (w/ path compression)
+    void merge(int x, int y)
+    {
+        link(find(x), find(y));
+    }
 };
 
   
@@ -135,7 +137,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
     int edge_counter = 0;
   
     // Create disjoint sets
-    DisjointSets ds(vertices.size());
+    DisjointSets disjoint_sets(vertices.size());
   
     // Iterate through the graph
     int i = 0;
@@ -144,8 +146,8 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
         float u = finalGraph[i][1];
         float v = finalGraph[i][2];
   
-        int set_u = ds.find(u);
-        int set_v = ds.find(v);
+        int set_u = disjoint_sets.find(u);
+        int set_v = disjoint_sets.find(v);
   
         // Check if edge endpoints are in the same set/tree already
         if (set_u != set_v)
@@ -159,7 +161,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
             }
   
             // Merge two sets
-            ds.merge(set_u, set_v);
+            disjoint_sets.merge(set_u, set_v);
         }
         i++;
     }
@@ -169,7 +171,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
     return mst_wt;
 }
 
-int run_alg(int numpoints, int numtrials, int dimension) {
+void run_alg(int numpoints, int numtrials, int dimension) {
     std::__1::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     float mst_total = 0;
