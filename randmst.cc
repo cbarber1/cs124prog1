@@ -41,36 +41,22 @@ std::vector<std::vector<float> > get_vertices(int numpoints, int dimension) {
     return vertices;
 }
 
-// std::map<int, std::array<float, 4>> create_map() {
-//     std::map<int, std::array<float, 4>> kn;
-//     kn[128] = {pow(0.1, 2), pow(0.2, 2), pow(0.4, 2), pow(0.6, 2)};
-//     kn[4096] = {pow(0.003, 2), pow(0.04, 2), pow(0.12, 2), pow(0.23, 2)};
-//     kn[8192] = {pow(0.002, 2), pow(0.03, 2), pow(0.1, 2), pow(0.2, 2)};
-//     kn[16384] = {pow(0.001, 2), pow(0.02, 2), pow(0.1, 2), pow(0.19, 2)};
-//     kn[32768] = {pow(0.0005, 2), pow(.013, 2), pow(, 2), pow(0.15, 2)};
-//     kn[65536] =
-//     kn[131072] =
-//     kn[131072] = 
-//     kn[262144] = 
-// }
-
 // Helper function to build graph (represented as edges in increasing weight)
 std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std::vector<std::vector<float> > vertices) {
     // Initialize vector that stores points and edge between them
     std::vector<std::array<float, 3> > final_graph;
     final_graph.reserve(numpoints*20);
 
-  //  float kn = pow(.1, 2);//pow(.1 * log(numpoints),2);
-    float kn = 15.99921072082581*pow(numpoints,-1.0691752251222053) + .0004;
-    // 1 dimensions 
-    // 128 : pow(.07)
-    // 256 : pow()
-    // 2 dimensions
-    // 4096 :  pow(.04, 2)
-    // 8192 : pow(.03, 2)
-    // 16384 : pow(.02, 2) maybe .18
-    // 32768 : pow(.013, 2)
-    // 65536 : pow(.009, 2) maybe even less
+    float kn = 0;
+    if (dimension == 1) {
+        kn = 15.99921072082581*pow(numpoints,-1.0691752251222053) + .0004;
+    } else if (dimension == 2) {
+        kn = 3.5935139096062696 * pow(numpoints,-0.5570087686738145) + 0.0045;
+    } else if (dimension == 3) {
+        kn = 2.2242548127651576 * pow(numpoints, -0.35594891508401877) + 0.004683;
+    } else {
+        kn = 2.5278030146479202 * pow(numpoints, -0.30495038437899674) + 0.0245;
+    }
 
     // Calculate edge between each unique pair of vertices and store as triple in final_graph vector
     for (int i = 0; i < numpoints; i++) {
@@ -146,12 +132,14 @@ struct DisjointSets {
 float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::array<float, 3> > finalGraph) {
     float mst_wt = 0; // Initialize result
     float largest_wt = 0;
+    int edge_counter = 0;
   
     // Create disjoint sets
     DisjointSets ds(vertices.size());
   
     // Iterate through the graph
-    for (int i = 0; i < finalGraph.size(); i++)
+    int i = 0;
+    while (edge_counter < vertices.size() - 1)
     {
         float u = finalGraph[i][1];
         float v = finalGraph[i][2];
@@ -162,6 +150,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
         // Check if edge endpoints are in the same set/tree already
         if (set_u != set_v)
         {
+            edge_counter++;
             // Update MST weight
             float wt = sqrt(finalGraph[i][0]);
             mst_wt += wt;
@@ -172,6 +161,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
             // Merge two sets
             ds.merge(set_u, set_v);
         }
+        i++;
     }
 
     std::cout << "largest weight in the MST: " << largest_wt << "\n";
@@ -179,70 +169,55 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
     return mst_wt;
 }
 
+int run_alg(int numpoints, int numtrials, int dimension) {
+    std::__1::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
+
+    float mst_total = 0;
+    for (int i = 0; i < numtrials; i++) {
+        std::vector<std::vector<float> > vertices = get_vertices(numpoints, dimension);
+        std::vector<std::array<float, 3> > finalGraph = build_graph(numpoints, dimension, vertices);
+
+        mst_total += kruskalMST(vertices, finalGraph);
+    }
+
+    std::__1::chrono::steady_clock::time_point end = std::chrono::high_resolution_clock::now();
+
+    std::__1::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
+
+    std::cout << "average weight for " << numpoints << " and dimension " << dimension << ": " << mst_total / numtrials << "\n";
+    std::cout << "time it took: " << duration.count() << " seconds \n";
+}
+
 int main(int argc, char *argv[]) {
-    if (argc != 5) {
+    if (argc != 5 && argc != 2) {
         std::cout << "Usage: ./randmst 0 numpoints numtrials dimension\n";
+        std::cout << "OR: ./randmst 1\n";
     } else {
         srand(std::time(0));
 
-        int n[12] = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144};
+        int debug_mode = atoi(argv[1]);
 
-        for (int i = 0; i < 12; i++) {
-            for (int d = 1; d < 5; d++) {
+        // If debug mode is 0, run the numpoints and numtrials at the dimension requested
+        if (debug_mode == 0) {
+            int numpoints = atoi(argv[2]);
+            int numtrials = atoi(argv[3]);
+            int dimension = atoi(argv[4]);
 
-                std::__1::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
+            run_alg(numpoints, numtrials, dimension);
+        // If debug mode is 1, run for every numpoints and dimension option for 5 trials each
+        } else if (debug_mode == 1) {
+            int n[12] = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144};
+            for (int i = 0; i < 12; i++) {
+                for (int d = 1; d < 5; d++) {
 
-                // int numpoints = atoi(argv[2]);
-                // int numtrials = atoi(argv[3]);
-                // int dimension = atoi(argv[4]);
-                int numpoints = n[i];
-                int numtrials = 5;
-                int dimension = d;
+                    int numpoints = n[i];
+                    int numtrials = 5;
+                    int dimension = d;
 
-                float mst_total = 0;
-                for (int i = 0; i < numtrials; i++) {
-                    std::vector<std::vector<float> > vertices = get_vertices(numpoints, dimension);
-                    std::vector<std::array<float, 3> > finalGraph = build_graph(numpoints, dimension, vertices);
-
-                    mst_total += kruskalMST(vertices, finalGraph);
+                    run_alg(numpoints, numtrials, dimension);
                 }
-
-                std::__1::chrono::steady_clock::time_point end = std::chrono::high_resolution_clock::now();
-
-                std::__1::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-
-                std::cout << "average weight for " << numpoints << " and dimension " << dimension << ": " << mst_total / numtrials << "\n";
-                std::cout << "time it took: " << duration.count() << " seconds \n";
             }
         }
-    }
+
+    }    
 };
-
-// int main(int argc, char *argv[]) {
-//     if (argc != 5) {
-//         std::cout << "Usage: ./randmst 0 numpoints numtrials dimension\n";
-//     } else {
-//         srand(std::time(0));
-
-//         std::__1::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
-
-//         int numpoints = atoi(argv[2]);
-//         int numtrials = atoi(argv[3]);
-//         int dimension = atoi(argv[4]);
-
-//         float mst_total = 0;
-//         for (int i = 0; i < numtrials; i++) {
-//             std::vector<std::vector<float> > vertices = get_vertices(numpoints, dimension);
-//             std::vector<std::array<float, 3> > finalGraph = build_graph(numpoints, dimension, vertices);
-
-//             mst_total += kruskalMST(vertices, finalGraph);
-//         }
-
-//         std::__1::chrono::steady_clock::time_point end = std::chrono::high_resolution_clock::now();
-
-//         std::__1::chrono::seconds duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-
-//         std::cout << "average weight: " << mst_total / numtrials << "\n";
-//         std::cout << "time it took: " << duration.count() << " seconds \n";
-//     }
-// };
