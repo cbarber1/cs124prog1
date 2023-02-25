@@ -48,7 +48,7 @@ std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std
     final_graph.reserve(numpoints*20);
 
   //  float kn = pow(.1, 2);//pow(.1 * log(numpoints),2);
-    float kn = 15.99921072082581*pow(numpoints,-1.0691752251222053) + .0004;
+    // float kn = 15.99921072082581*pow(numpoints,-1.0691752251222053) + .0004;
     // 1 dimensions 
     // 128 : pow(.07)
     // 256 : pow()
@@ -58,6 +58,16 @@ std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std
     // 16384 : pow(.02, 2) maybe .18
     // 32768 : pow(.013, 2)
     // 65536 : pow(.009, 2) maybe even less
+    float kn = 0;
+    if (dimension == 1) {
+        kn = 15.99921072082581*pow(numpoints,-1.0691752251222053) + .0004;
+    } else if (dimension == 2) {
+        kn = 3.5935139096062696 * pow(numpoints,-0.5570087686738145) + 0.0045;
+    } else if (dimension == 3) {
+        kn = 2.2242548127651576 * pow(numpoints, -0.35594891508401877) + 0.004683;
+    } else {
+        kn = 2.5278030146479202 * pow(numpoints, -0.30495038437899674) + 0.0245;
+    }
 
     // Calculate edge between each unique pair of vertices and store as triple in final_graph vector
     for (int i = 0; i < numpoints; i++) {
@@ -110,13 +120,14 @@ struct DisjointSets {
         return parent[u];
     }
   
-    // Union by rank
+    // Union (w/ path compression)
     void merge(int x, int y)
     {
-        x = find(x), y = find(y);
+        x = find(x);
+        y = find(y);
   
-        /* Make tree with smaller height
-        a subtree of the other tree */
+        // Make tree with smaller height
+        // a subtree of the other tree 
         if (rank[x] > rank[y]) {
             parent[y] = x;
         } else {
@@ -135,7 +146,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
     float largest_wt = 0;
   
     // Create disjoint sets
-    DisjointSets ds(vertices.size());
+    DisjointSets disjoint_sets(vertices.size());
   
     // Iterate through the graph
     for (int i = 0; i < finalGraph.size(); i++)
@@ -143,8 +154,8 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
         float u = finalGraph[i][1];
         float v = finalGraph[i][2];
   
-        int set_u = ds.find(u);
-        int set_v = ds.find(v);
+        int set_u = disjoint_sets.find(u);
+        int set_v = disjoint_sets.find(v);
   
         // Check if edge endpoints are in the same set/tree already
         if (set_u != set_v)
@@ -157,7 +168,7 @@ float kruskalMST(std::vector<std::vector<float> > vertices, std::vector<std::arr
             }
   
             // Merge two sets
-            ds.merge(set_u, set_v);
+            disjoint_sets.merge(set_u, set_v);
         }
     }
 
@@ -174,10 +185,12 @@ int main(int argc, char *argv[]) {
 
         int n[12] = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144};
 
-        for (int i = 0; i < 12; i++) {
-            for (int d = 1; d < 5; d++) {
+        
+        for (int i = 11; i < 12; i++) {
+            for (int d = 3; d < 5; d++) {
 
                 std::__1::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
+                
 
                 // int numpoints = atoi(argv[2]);
                 // int numtrials = atoi(argv[3]);
@@ -185,6 +198,8 @@ int main(int argc, char *argv[]) {
                 int numpoints = n[i];
                 int numtrials = 5;
                 int dimension = d;
+        
+                std::cout << "dimension" << dimension << " " << numpoints << "\n";
 
                 float mst_total = 0;
                 for (int i = 0; i < numtrials; i++) {
