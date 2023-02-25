@@ -132,13 +132,8 @@ struct DisjointSets {
         }
         return parent[u];
     }
-  
-    // Union (w/ path compression)
-    void merge(int x, int y)
-    {
-        x = find(x);
-        y = find(y);
-  
+
+    void link(int x, int y) {
         // Make tree with smaller height
         // a subtree of the other tree 
         if (rank[x] > rank[y]) {
@@ -150,6 +145,12 @@ struct DisjointSets {
         if (rank[x] == rank[y]) {
             rank[y]++;
         }
+    }
+  
+    // Union (w/ path compression)
+    void merge(int x, int y)
+    {
+        link(find(x), find(y));
     }
 };
 
@@ -199,8 +200,8 @@ int main(int argc, char *argv[]) {
         int n[12] = {128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144};
 
         
-        for (int i = 11; i < 12; i++) {
-            for (int d = 3; d < 5; d++) {
+        for (int i = 0; i < 12; i++) {
+            for (int d = 1; d < 5; d++) {
 
                 std::__1::chrono::steady_clock::time_point start = std::chrono::high_resolution_clock::now();
                 
