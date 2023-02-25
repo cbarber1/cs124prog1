@@ -41,6 +41,19 @@ std::vector<std::vector<float> > get_vertices(int numpoints, int dimension) {
     return vertices;
 }
 
+// std::map<int, std::array<float, 4>> create_map() {
+//     std::map<int, std::array<float, 4>> kn;
+//     kn[128] = {pow(0.1, 2), pow(0.2, 2), pow(0.4, 2), pow(0.6, 2)};
+//     kn[4096] = {pow(0.003, 2), pow(0.04, 2), pow(0.12, 2), pow(0.23, 2)};
+//     kn[8192] = {pow(0.002, 2), pow(0.03, 2), pow(0.1, 2), pow(0.2, 2)};
+//     kn[16384] = {pow(0.001, 2), pow(0.02, 2), pow(0.1, 2), pow(0.19, 2)};
+//     kn[32768] = {pow(0.0005, 2), pow(.013, 2), pow(, 2), pow(0.15, 2)};
+//     kn[65536] =
+//     kn[131072] =
+//     kn[131072] = 
+//     kn[262144] = 
+// }
+
 // Helper function to build graph (represented as edges in increasing weight)
 std::vector<std::array<float, 3> > build_graph(int numpoints, int dimension, std::vector<std::vector<float> > vertices) {
     // Initialize vector that stores points and edge between them
